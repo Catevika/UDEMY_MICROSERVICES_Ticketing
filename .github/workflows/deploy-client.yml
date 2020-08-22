@@ -1,0 +1,26 @@
+name: deploy-client
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "client/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd client && docker build -t catevika9565/client .
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB.USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB.PASSWORD }}
+      - run: docker push catevika9565/client
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernetes cluster kubeconfig save udemy-microservices-ticketing
+      - run: kubectl rollout restart deployment client-depl
