@@ -15,7 +15,7 @@ jobs:
       - run: cd auth && docker build -t catevika9565/auth .
       - name: Login to DockerHub Registry
         run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-        # env:
-        #   DOCKERHUB_USER: ${{ secrets.DOCKERHUB.USERNAME }}
-        #   DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB.PASSWORD }}
+        env:
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB.USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB.PASSWORD }}
       - run: docker push catevika9565/auth
