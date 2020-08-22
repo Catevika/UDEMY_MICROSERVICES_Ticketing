@@ -1,18 +1,26 @@
 name: deploy-auth
+
 on:
   push:
     branches:
       - master
     paths:
-      - 'auth/**'
+      - "auth/**"
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v2
       - run: cd auth && docker build -t catevika9565/auth .
-      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - name: Login to DockerHub Registry
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER.USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER.PASSWORD }}
+          DOCKERHUB_USER: ${{ secrets.DOCKERHUB.USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB.PASSWORD }}
       - run: docker push catevika9565/auth
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernetes cluster kubeconfig save udemy-microservices-ticketing
+      - run: kubectl rollout restart deployment auth-depl
